@@ -226,6 +226,20 @@ extern int main(int argc, char* argv[])
   x2("[*[:xdigit:]+]", "-@^+", 3, 4);
   n("[[:upper]]", "A");
   x2("[[:upper]]", ":", 0, 1);
+
+  // Issue #253
+  e("[[:::]",   ":[", ONIGERR_PREMATURE_END_OF_CHAR_CLASS);
+  e("[[:\\]:]", ":]", ONIGERR_PREMATURE_END_OF_CHAR_CLASS);
+  e("[[:\\[:]", ":[", ONIGERR_PREMATURE_END_OF_CHAR_CLASS);
+  e("[[:\\]]",  ":]", ONIGERR_PREMATURE_END_OF_CHAR_CLASS);
+  e("[[:upper :]]",  "", ONIGERR_INVALID_POSIX_BRACKET_TYPE);
+  e("[[:upper\\] :]]",  "", ONIGERR_INVALID_POSIX_BRACKET_TYPE);
+
+  x2("[[:::]]",    ":", 0, 1);
+  x2("[[:\\]:]]*", ":]", 0, 2);
+  x2("[[:\\[:]]*", ":[", 0, 2);
+  x2("[[:\\]]]*",  ":]", 0, 2);
+
   x2("[\\044-\\047]", "\046", 0, 1);
   x2("[\\x5a-\\x5c]", "\x5b", 0, 1);
   x2("[\\x6A-\\x6D]", "\x6c", 0, 1);
