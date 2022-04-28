@@ -6582,8 +6582,7 @@ prs_posix_bracket(CClassNode* cc, UChar** src, UChar* end, ParseEnv* env)
   };
 
   PosixBracketEntryType *pb;
-  int not, i, r;
-  OnigCodePoint c;
+  int not, r;
   OnigEncoding enc = env->enc;
   UChar *p = *src;
 
@@ -6613,21 +6612,6 @@ prs_posix_bracket(CClassNode* cc, UChar** src, UChar* end, ParseEnv* env)
   }
 
  not_posix_bracket:
-  c = 0;
-  i = 0;
-  while (!PEND && ((c = PPEEK) != ':') && c != ']') {
-    PINC_S;
-    if (++i > POSIX_BRACKET_CHECK_LIMIT_LENGTH) break;
-  }
-  if (c == ':' && ! PEND) {
-    PINC_S;
-    if (! PEND) {
-      PFETCH_S(c);
-      if (c == ']')
-        return ONIGERR_INVALID_POSIX_BRACKET_TYPE;
-    }
-  }
-
   return 1;  /* 1: is not POSIX bracket, but no error. */
 }
 
@@ -6950,11 +6934,8 @@ prs_cc(Node** np, PToken* tok, UChar** src, UChar* end, ParseEnv* env)
       r = prs_posix_bracket(cc, &p, end, env);
       if (r < 0) goto err;
       if (r == 1) {  /* is not POSIX bracket */
-        CC_ESC_WARN(env, (UChar* )"[");
         p = tok->backp;
-        in_code = tok->u.code;
-        in_raw = 0;
-        goto val_entry;
+        goto cc_open_in_cc;
       }
       goto next_cprop;
       break;
@@ -7046,6 +7027,7 @@ prs_cc(Node** np, PToken* tok, UChar** src, UChar* end, ParseEnv* env)
       break;
 
     case TK_CC_OPEN_CC: /* [ */
+    cc_open_in_cc:
       {
         Node *anode;
         CClassNode* acc;
