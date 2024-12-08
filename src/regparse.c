@@ -4028,9 +4028,7 @@ next_state_class(CClassNode* cc, OnigCodePoint* vs, enum CCVALTYPE* type,
     }
   }
 
-  if (*state != CCS_START)
-    *state = CCS_VALUE;
-
+  *state = CCS_VALUE;
   *type  = CCV_CLASS;
   return 0;
 }
@@ -4325,6 +4323,12 @@ parse_char_class(Node** np, OnigToken* tok, UChar** src, UChar* end,
           CC_ESC_WARN(env, (UChar* )"-");
           goto range_end_val;
         }
+
+        if (val_type == CCV_CLASS) {
+          r = ONIGERR_UNMATCHED_RANGE_SPECIFIER_IN_CHAR_CLASS;
+          goto err;
+        }
+
         state = CCS_RANGE;
       }
       else if (state == CCS_START) {
